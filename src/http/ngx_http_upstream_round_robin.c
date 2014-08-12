@@ -322,7 +322,6 @@ ngx_http_upstream_create_round_robin_peer(ngx_http_request_t *r,
 
     peers->single = (ur->naddrs == 1);
     peers->number = ur->naddrs;
-    peers->init_number = ngx_random() % peers->number;
     peers->name = &ur->host;
 
     if (ur->sockaddr) {
@@ -516,7 +515,7 @@ ngx_http_upstream_get_peer(ngx_http_upstream_rr_peer_data_t *rrp)
 {
     time_t                        now;
     uintptr_t                     m;
-    ngx_int_t                     total, flag;
+    ngx_int_t                     total;
     ngx_uint_t                    i, n;
     ngx_http_upstream_rr_peer_t  *peer, *best;
 
@@ -524,13 +523,8 @@ ngx_http_upstream_get_peer(ngx_http_upstream_rr_peer_data_t *rrp)
 
     best = NULL;
     total = 0;
-    flag = 1;
 
-    for (i = rrp->peers->init_number;
-         i != rrp->peers->init_number || flag;
-         i = (i + 1) % rrp->peers->number)
-    {
-        flag = 0;
+    for (i = 0; i < rrp->peers->number; i++) {
 
         n = i / (8 * sizeof(uintptr_t));
         m = (uintptr_t) 1 << i % (8 * sizeof(uintptr_t));
